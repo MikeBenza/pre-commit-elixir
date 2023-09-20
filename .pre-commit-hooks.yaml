@@ -1,0 +1,6 @@
+- id: credo_not_worse
+  name: Ensure that a file hasn't worsened its credo checks
+  description: Same
+  entry: credo-not-worse.bash
+  language: script
+  types: [file, elixir]
