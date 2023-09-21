@@ -17,7 +17,7 @@ for filename in "$@" ; do
   OLD_CREDO_COUNT=$(mix credo --format oneline "$OLD_FILE" | wc -l | tr -d ' ')
   NEW_CREDO_COUNT=$(mix credo --format oneline "$filename" | wc -l | tr -d ' ')
   if (( NEW_CREDO_COUNT > OLD_CREDO_COUNT )) ; then
-    printf 2<&1 "❌ Credo listed more errors in \033[0;36m%s\033[0m: %d -> %d" \
+    printf 2<&1 "❌ Credo listed more errors in \033[0;36m%s\033[0m: %d -> %d\n" \
       "$filename" "$OLD_CREDO_COUNT" "$NEW_CREDO_COUNT"
     ERRORS=$((ERRORS + 1))
   fi
