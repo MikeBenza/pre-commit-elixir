@@ -11,15 +11,23 @@ ERRORS=0
 for filename in "$@" ; do
   # Copy the old file to a temporary location
   OLD_FILE="${WORKDIR}/$(basename "$filename")"
-  git show "$REV:$filename" > "$OLD_FILE"
-
-  # Compare credo on the old file and the new file
-  OLD_CREDO_COUNT=$(mix credo --format oneline "$OLD_FILE" | wc -l | tr -d ' ')
   NEW_CREDO_COUNT=$(mix credo --format oneline "$filename" | wc -l | tr -d ' ')
-  if (( NEW_CREDO_COUNT > OLD_CREDO_COUNT )) ; then
-    printf 2<&1 "❌ Credo listed more errors in \033[0;36m%s\033[0m: %d -> %d\n" \
-      "$filename" "$OLD_CREDO_COUNT" "$NEW_CREDO_COUNT"
-    ERRORS=$((ERRORS + 1))
+
+  # For existing files, detect an increase
+  if git show "$REV:$filename" > "$OLD_FILE" 2>/dev/null ; then
+    OLD_CREDO_COUNT=$(mix credo --format oneline "$OLD_FILE" | wc -l | tr -d ' ')
+    if (( NEW_CREDO_COUNT > OLD_CREDO_COUNT )) ; then
+      printf 2<&1 "❌ Credo listed more errors in \033[0;36m%s\033[0m: %d -> %d\n" \
+        "$filename" "$OLD_CREDO_COUNT" "$NEW_CREDO_COUNT"
+      ERRORS=$((ERRORS + 1))
+    fi
+  else
+    # For new files, any value > 0 is an show-stopper
+    if (( NEW_CREDO_COUNT > 0 )) ; then
+      printf 2<&1 "❌ Credo listed errors in new file \033[0;36m%s\033[0m: %d\n" \
+        "$filename" "$NEW_CREDO_COUNT"
+      ERRORS=$((ERRORS + 1))
+    fi
   fi
 done
 
